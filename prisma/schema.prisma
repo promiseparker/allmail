@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum Plan {
+  free
+  pro
+  enterprise
+}
+
+enum Provider {
+  google
+  microsoft
+  caldav
+}
+
+enum SyncStatus {
+  pending
+  syncing
+  synced
+  error
+  paused
+}
+
+enum EventStatus {
+  confirmed
+  tentative
+  cancelled
+}
+
+enum EventVisibility {
+  default
+  public
+  private
+  confidential
+}
+
+enum SyncType {
+  full
+  delta
+  webhook
+}
+
+enum SyncJobStatus {
+  started
+  completed
+  failed
+  partial
+}
+
+enum ConflictSeverity {
+  hard
+  soft
+}
+
+enum ConflictStatus {
+  active
+  acknowledged
+  resolved
+}
+
+enum AttendeeStatus {
+  accepted
+  declined
+  tentative
+  needsAction
+}
+
+// ============================================================
+// USERS
+// ============================================================
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String?
+  avatarUrl         String?
+  timezone          String    @default("UTC")
+  plan              Plan      @default(free)
+  planExpiresAt     DateTime?
+  stripeCustomerId  String?   @unique
+  // Stores user preferences as JSON — avoids migrations for every new preference field.
+  // Shape defined by UserSettings in types/settings.ts
+  settings          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  accounts          ConnectedAccount[]
+  conflicts         ConflictFlag[]
+
+  // NextAuth relations
+  authAccounts      Account[]
+  sessions          Session[]
+
+  @@index([email])
+  @@index([plan])
+  @@map("users")
+}
+
+// ============================================================
+// NEXTAUTH TABLES
+// ============================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================
+// CONNECTED ACCOUNTS
+// ============================================================
+
+model ConnectedAccount {
+  id                  String     @id @default(cuid())
+  userId              String
+  provider            Provider
+  providerAccountId   String
+  email               String
+  displayName         String?
+  avatarUrl           String?
+  scopes              String[]
+  isActive            Boolean    @default(true)
+  lastSyncedAt        DateTime?
+  syncStatus          SyncStatus @default(pending)
+  errorMessage        String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  // Relations
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  oauthToken          OAuthToken?
+  calendars           Calendar[]
+  syncLogs            SyncLog[]
+
+  @@unique([userId, provider, providerAccountId])
+  @@index([userId])
+  @@index([lastSyncedAt])
+  @@map("connected_accounts")
+}
+
+// ============================================================
+// OAUTH TOKENS (encrypted)
+// ============================================================
+
+model OAuthToken {
+  id                   String   @id @default(cuid())
+  connectedAccountId   String   @unique
+  accessTokenEnc       Bytes
+  refreshTokenEnc      Bytes
+  tokenType            String   @default("Bearer")
+  expiresAt            DateTime
+  refreshExpiresAt     DateTime?
+  iv                   Bytes
+  keyVersion           Int      @default(1)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  connectedAccount     ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_tokens")
+}
+
+// ============================================================
+// CALENDARS
+// ============================================================
+
+model Calendar {
+  id                   String   @id @default(cuid())
+  connectedAccountId   String
+  providerCalendarId   String
+  name                 String
+  description          String?
+  color                String?
+  isPrimary            Boolean  @default(false)
+  isEnabled            Boolean  @default(true)
+  accessRole           String?
+  timezone             String?
+  syncToken            String?
+  webhookChannelId     String?
+  webhookExpiresAt     DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  connectedAccount     ConnectedAccount    @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+  events               Event[]
+  webhookSubscriptions WebhookSubscription[]
+
+  @@unique([connectedAccountId, providerCalendarId])
+  @@index([connectedAccountId])
+  @@index([webhookExpiresAt])
+  @@map("calendars")
+}
+
+// ============================================================
+// EVENTS (normalized)
+// ============================================================
+
+model Event {
+  id                 String          @id @default(cuid())
+  userId             String
+  calendarId         String
+  providerEventId    String
+  providerIcalUid    String?
+
+  // Core
+  title              String          @default("(No title)")
+  description        String?
+  location           String?
+  url                String?
+
+  // Timing
+  startsAt           DateTime
+  endsAt             DateTime
+  isAllDay           Boolean         @default(false)
+  timezone           String?
+
+  // Recurrence
+  isRecurring        Boolean         @default(false)
+  recurrenceRule     String?
+  recurringEventId   String?
+  originalStartTime  DateTime?
+
+  // Status
+  status             EventStatus     @default(confirmed)
+  visibility         EventVisibility @default(default)
+
+  // Attendees (denormalized JSON)
+  organizer          Json?
+  attendees          Json?
+  attendeeCount      Int             @default(0)
+
+  // Provider metadata
+  provider           Provider
+  providerEtag       String?
+  providerRaw        Json?
+
+  // Sync tracking
+  syncedAt           DateTime        @default(now())
+  deletedAt          DateTime?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  calendar           Calendar        @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  // Conflict relations
+  conflictsAsA       ConflictFlag[]  @relation("EventA")
+  conflictsAsB       ConflictFlag[]  @relation("EventB")
+
+  @@unique([calendarId, providerEventId])
+  @@index([userId, startsAt, endsAt])
+  @@index([calendarId, startsAt])
+  @@index([recurringEventId])
+  @@index([providerIcalUid])
+  @@map("events")
+}
+
+// ============================================================
+// CONFLICT FLAGS
+// ============================================================
+
+model ConflictFlag {
+  id              String           @id @default(cuid())
+  userId          String
+  eventIdA        String
+  eventIdB        String
+  overlapStart    DateTime
+  overlapEnd      DateTime
+  overlapMinutes  Int
+  severity        ConflictSeverity @default(hard)
+  status          ConflictStatus   @default(active)
+  resolvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventA          Event            @relation("EventA", fields: [eventIdA], references: [id], onDelete: Cascade)
+  eventB          Event            @relation("EventB", fields: [eventIdB], references: [id], onDelete: Cascade)
+
+  @@unique([eventIdA, eventIdB])
+  @@index([userId, status])
+  @@map("conflict_flags")
+}
+
+// ============================================================
+// SYNC LOGS
+// ============================================================
+
+model SyncLog {
+  id                   String        @id @default(cuid())
+  connectedAccountId   String
+  calendarId           String?
+  syncType             SyncType
+  status               SyncJobStatus
+  eventsCreated        Int           @default(0)
+  eventsUpdated        Int           @default(0)
+  eventsDeleted        Int           @default(0)
+  errorMessage         String?
+  durationMs           Int?
+  startedAt            DateTime      @default(now())
+  completedAt          DateTime?
+
+  connectedAccount     ConnectedAccount @relation(fields: [connectedAccountId], references: [id], onDelete: Cascade)
+
+  @@index([connectedAccountId, startedAt(sort: Desc)])
+  @@map("sync_logs")
+}
+
+// ============================================================
+// WEBHOOK SUBSCRIPTIONS
+// ============================================================
+
+model WebhookSubscription {
+  id          String   @id @default(cuid())
+  calendarId  String
+  provider    Provider
+  channelId   String   @unique
+  resourceId  String?
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  calendar    Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("webhook_subscriptions")
+}

@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface text-gray-900;
+    font-family: var(--font-inter);
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
+
+@layer components {
+  /* Calendar grid utilities */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: 56px repeat(7, 1fr);
+  }
+
+  .calendar-grid-month {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  /* Event card base */
+  .event-card {
+    @apply rounded-sm px-2 py-1 text-xs font-medium overflow-hidden cursor-pointer
+           transition-all duration-120 hover:-translate-y-px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Provider dot indicator */
+  .provider-dot {
+    @apply inline-block w-2 h-2 rounded-full flex-shrink-0;
+  }
+
+  /* Sidebar icon button */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-text
+           hover:bg-sidebar-hover hover:text-sidebar-text-active
+           transition-colors duration-120 cursor-pointer select-none;
+  }
+
+  .sidebar-item.active {
+    @apply bg-sidebar-active text-sidebar-text-active;
+  }
+}
+
+@layer utilities {
+  .duration-120 {
+    transition-duration: 120ms;
+  }
+}
