@@ -21,15 +21,12 @@ export type NotificationJobData = {
 // QUEUES
 // ============================================================
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let syncQueue: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let notificationQueue: any = null;
+let syncQueue: Queue<SyncJobData> | null = null;
+let notificationQueue: Queue<NotificationJobData> | null = null;
 
 export function getSyncQueue(): Queue<SyncJobData> {
   if (!syncQueue) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    syncQueue = new (Queue as any)<SyncJobData>("sync-jobs", {
+    syncQueue = new Queue<SyncJobData>("sync-jobs", {
       connection: getIORedis(),
       defaultJobOptions: {
         removeOnComplete: 100,
@@ -47,8 +44,7 @@ export function getSyncQueue(): Queue<SyncJobData> {
 
 export function getNotificationQueue(): Queue<NotificationJobData> {
   if (!notificationQueue) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    notificationQueue = new (Queue as any)<NotificationJobData>("notifications", {
+    notificationQueue = new Queue<NotificationJobData>("notifications", {
       connection: getIORedis(),
       defaultJobOptions: {
         removeOnComplete: 50,
