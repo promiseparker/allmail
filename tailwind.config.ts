@@ -16,24 +16,24 @@ const config: Config = {
       colors: {
         // Design system tokens
         primary: {
-          DEFAULT: "#2563EB",
-          50: "#EFF6FF",
-          100: "#DBEAFE",
-          200: "#BFDBFE",
-          300: "#93C5FD",
-          400: "#60A5FA",
-          500: "#3B82F6",
-          600: "#2563EB",
-          700: "#1D4ED8",
-          800: "#1E40AF",
-          900: "#1E3A8A",
+          DEFAULT: "#0055FF",
+          50: "#EBF0FF",
+          100: "#D6E1FF",
+          200: "#ADC4FF",
+          300: "#7AA2FF",
+          400: "#3D74FF",
+          500: "#0055FF",
+          600: "#0044CC",
+          700: "#003399",
+          800: "#002266",
+          900: "#001133",
         },
         sidebar: {
-          bg: "#111827",
-          hover: "#1F2937",
-          active: "#374151",
+          bg: "#FFFFFF",
+          hover: "#F3F4F6",
+          active: "#111827",
           text: "#9CA3AF",
-          "text-active": "#F9FAFB",
+          "text-active": "#111827",
         },
         surface: {
           DEFAULT: "#FFFFFF",
@@ -52,6 +52,34 @@ const config: Config = {
         microsoft: {
           DEFAULT: "#00A4EF",
           light: "#E6F6FE",
+        },
+        apple: {
+          DEFAULT: "#555555",
+          light: "#F5F5F7",
+        },
+        fastmail: {
+          DEFAULT: "#1E7BE0",
+          light: "#E8F2FD",
+        },
+        yahoo: {
+          DEFAULT: "#7B0099",
+          light: "#F5E6FF",
+        },
+        nextcloud: {
+          DEFAULT: "#0082C9",
+          light: "#E6F3FB",
+        },
+        zoho: {
+          DEFAULT: "#3E5BFC",
+          light: "#EDF0FF",
+        },
+        proton: {
+          DEFAULT: "#6D4AFF",
+          light: "#F0ECFF",
+        },
+        caldav: {
+          DEFAULT: "#6B7280",
+          light: "#F3F4F6",
         },
         // Status colors
         conflict: {

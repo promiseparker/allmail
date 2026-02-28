@@ -141,7 +141,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
   return (
     <div
       className={cn(
-        "bg-white border rounded-xl shadow-card overflow-hidden transition-opacity",
+        "bg-white border rounded-xl overflow-hidden transition-opacity",
         isHard        ? "border-conflict-hard/30" : "border-conflict-soft/30",
         isAcknowledged && "opacity-60"
       )}
@@ -228,7 +228,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-t border-border">
+      <div className="flex items-center gap-3 px-4 py-2.5 border-t border-gray-100">
         {isAcknowledged ? (
           <>
             <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -255,7 +255,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
             <button
               onClick={() => mutation.mutate("resolve")}
               disabled={mutation.isPending}
-              className="text-xs font-medium text-primary hover:text-primary-700 transition-colors disabled:opacity-50"
+              className="text-xs font-medium text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
             >
               Mark resolved
             </button>
@@ -269,7 +269,7 @@ function ConflictCard({ conflict }: { conflict: Conflict }) {
         {/* View in calendar */}
         <Link
           href={calendarUrl}
-          className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-primary transition-colors"
+          className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 transition-colors"
         >
           <Calendar className="w-3 h-3" />
           View in calendar
@@ -416,7 +416,7 @@ export function ConflictList({
             <button
               onClick={() => acknowledgeAllMutation.mutate()}
               disabled={acknowledgeAllMutation.isPending}
-              className="text-xs text-gray-500 hover:text-gray-700 border border-border rounded-md px-3 py-1.5 hover:bg-surface-muted transition-colors disabled:opacity-50"
+              className="text-xs text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Acknowledge all
             </button>
@@ -424,7 +424,7 @@ export function ConflictList({
           <button
             onClick={rescan}
             disabled={isRescanning}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-border rounded-md px-3 py-1.5 hover:bg-surface-muted transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isRescanning && "animate-spin")} />
             {isRescanning ? "Scanning…" : "Rescan"}
@@ -451,7 +451,7 @@ export function ConflictList({
                     : key === "soft"
                     ? "bg-conflict-soft/10 border-conflict-soft/30 text-conflict-soft"
                     : "bg-gray-100 border-gray-300 text-gray-700"
-                  : "border-border text-gray-400 hover:text-gray-600 hover:bg-surface-muted"
+                  : "border-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-50"
               )}
             >
               {label}
@@ -484,7 +484,7 @@ export function ConflictList({
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white border border-border rounded-xl p-4 shadow-card animate-pulse"
+              className="bg-white border border-gray-100 rounded-xl p-4 animate-pulse"
             >
               <div className="h-4 w-40 bg-surface-subtle rounded mb-3" />
               <div className="h-8 w-full bg-surface-subtle rounded mb-3" />
@@ -497,7 +497,7 @@ export function ConflictList({
 
       {/* Error state */}
       {isError && (
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
+        <div className="bg-white border border-gray-100 rounded-xl p-8 text-center">
           <p className="text-sm text-conflict-hard">Failed to load conflicts.</p>
           <button
             onClick={() => qc.invalidateQueries({ queryKey: ["conflicts"] })}
@@ -510,9 +510,9 @@ export function ConflictList({
 
       {/* Empty state */}
       {!isLoading && !isError && allConflicts.length === 0 && (
-        <div className="bg-white border border-border rounded-xl p-12 text-center shadow-card">
-          <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-6 h-6 text-green-500" />
+        <div className="bg-white border border-gray-100 rounded-xl p-12 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-700">
             {tab === "active" ? "No active conflicts" : "No acknowledged conflicts"}
@@ -526,7 +526,7 @@ export function ConflictList({
             <button
               onClick={rescan}
               disabled={isRescanning}
-              className="mt-4 text-xs text-primary hover:underline disabled:opacity-50"
+              className="mt-4 text-xs text-gray-500 hover:underline disabled:opacity-50"
             >
               Run a conflict scan →
             </button>
@@ -536,13 +536,13 @@ export function ConflictList({
 
       {/* Filtered-to-empty state */}
       {!isLoading && !isError && allConflicts.length > 0 && conflicts.length === 0 && (
-        <div className="bg-white border border-border rounded-xl p-8 text-center">
+        <div className="bg-white border border-gray-100 rounded-xl p-8 text-center">
           <p className="text-sm text-gray-400">
             No {severity} conflicts in this view.
           </p>
           <button
             onClick={() => setSeverity("all")}
-            className="text-xs text-primary hover:underline mt-2"
+            className="text-xs text-gray-500 hover:underline mt-2"
           >
             Show all
           </button>

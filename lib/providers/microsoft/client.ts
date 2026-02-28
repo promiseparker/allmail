@@ -23,7 +23,6 @@ export class MicrosoftCalendarClient {
 
     let accessToken = decryptToken(
       Buffer.from(tokenRecord.accessTokenEnc),
-      Buffer.from(tokenRecord.iv),
       this.userId
     );
 
@@ -37,12 +36,10 @@ export class MicrosoftCalendarClient {
 
   private async refreshAccessToken(tokenRecord: {
     refreshTokenEnc: Buffer | Uint8Array;
-    iv: Buffer | Uint8Array;
     id: string;
   }): Promise<string> {
     const refreshToken = decryptToken(
       Buffer.from(tokenRecord.refreshTokenEnc),
-      Buffer.from(tokenRecord.iv),
       this.userId
     );
 
@@ -68,14 +65,8 @@ export class MicrosoftCalendarClient {
       expires_in: number;
     };
 
-    const { ciphertext: newAccessEnc, iv: newIv } = encryptToken(
-      data.access_token,
-      this.userId
-    );
-    const { ciphertext: newRefreshEnc } = encryptToken(
-      data.refresh_token,
-      this.userId
-    );
+    const newAccessEnc  = encryptToken(data.access_token,  this.userId);
+    const newRefreshEnc = encryptToken(data.refresh_token, this.userId);
 
     await db.oAuthToken.update({
       where: { id: tokenRecord.id },
@@ -85,7 +76,6 @@ export class MicrosoftCalendarClient {
         expiresAt: new Date(Date.now() + data.expires_in * 1000),
         // MS refresh tokens have 90-day sliding window
         refreshExpiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-        iv: newIv,
         updatedAt: new Date(),
       },
     });

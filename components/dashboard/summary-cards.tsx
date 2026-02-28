@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
-import { Calendar, AlertTriangle, Clock, BarChart3 } from "lucide-react";
+import { Calendar, AlertTriangle, Clock, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface SummaryCardsProps {
   eventCount:    number;
@@ -8,6 +11,15 @@ interface SummaryCardsProps {
   meetingHours:  number;
   accountCount:  number;
 }
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 10 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } },
+};
 
 export function SummaryCards({
   eventCount,
@@ -17,60 +29,86 @@ export function SummaryCards({
 }: SummaryCardsProps) {
   const cards = [
     {
-      label: "Today",
-      value: `${eventCount} event${eventCount !== 1 ? "s" : ""}`,
-      icon:  Calendar,
-      color: "text-primary",
-      bg:    "bg-primary-50",
-      href:  "/calendar",
+      label:     "Events today",
+      value:     String(eventCount),
+      sub:       eventCount === 1 ? "scheduled event" : "scheduled events",
+      icon:      Calendar,
+      iconBg:    "bg-gray-100",
+      iconColor: "text-gray-500",
+      href:      "/calendar",
+      alert:     false,
     },
     {
-      label: "Conflicts",
-      value: conflictCount === 0 ? "All clear" : `${conflictCount} active`,
-      icon:  AlertTriangle,
-      color: conflictCount > 0 ? "text-conflict-hard" : "text-green-500",
-      bg:    conflictCount > 0 ? "bg-conflict-hard-bg" : "bg-green-50",
-      href:  "/conflicts",
+      label:     "Conflicts",
+      value:     conflictCount === 0 ? "0" : String(conflictCount),
+      sub:       conflictCount === 0 ? "All clear" : conflictCount === 1 ? "active conflict" : "active conflicts",
+      icon:      AlertTriangle,
+      iconBg:    "bg-gray-100",
+      iconColor: "text-gray-500",
+      href:      "/conflicts",
+      alert:     conflictCount > 0,
     },
     {
-      label: "Meeting time",
-      value: meetingHours === 0 ? "None today" : `${meetingHours}h today`,
-      icon:  Clock,
-      color: "text-gray-600",
-      bg:    "bg-surface-muted",
-      href:  "/calendar",
+      label:     "Meeting time",
+      value:     meetingHours === 0 ? "—" : `${meetingHours}h`,
+      sub:       meetingHours === 0 ? "No meetings today" : "in meetings today",
+      icon:      Clock,
+      iconBg:    "bg-gray-100",
+      iconColor: "text-gray-500",
+      href:      "/calendar",
+      alert:     false,
     },
     {
-      label: "Accounts",
-      value: `${accountCount} connected`,
-      icon:  BarChart3,
-      color: "text-gray-600",
-      bg:    "bg-surface-muted",
-      href:  "/accounts",
+      label:     "Accounts",
+      value:     String(accountCount),
+      sub:       accountCount === 1 ? "account connected" : "accounts connected",
+      icon:      Link2,
+      iconBg:    "bg-gray-100",
+      iconColor: "text-gray-500",
+      href:      "/accounts",
+      alert:     false,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <motion.div
+      className="grid grid-cols-2 lg:grid-cols-4 gap-3"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
       {cards.map((card) => (
-        <Link
-          key={card.label}
-          href={card.href}
-          className="bg-white border border-border rounded-lg p-4 shadow-card hover:border-primary/30 hover:shadow-md transition-all group block"
-        >
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-xs text-gray-500 mb-1">{card.label}</p>
-              <p className="text-base font-semibold text-gray-900 group-hover:text-gray-800">
-                {card.value}
+        <motion.div key={card.label} variants={item}>
+          <Link
+            href={card.href}
+            className={cn(
+              "group block bg-white rounded-xl p-5 border transition-all duration-150",
+              card.alert
+                ? "border-red-100 hover:border-red-200"
+                : "border-gray-100 hover:border-gray-200",
+            )}
+          >
+            {/* Label + icon row */}
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[11px] font-medium text-gray-400 tracking-wide">
+                {card.label}
               </p>
+              <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0", card.iconBg)}>
+                <card.icon className={cn("w-[17px] h-[17px]", card.iconColor)} />
+              </div>
             </div>
-            <div className={cn("w-8 h-8 rounded-md flex items-center justify-center", card.bg)}>
-              <card.icon className={cn("w-4 h-4", card.color)} />
-            </div>
-          </div>
-        </Link>
+
+            {/* Value */}
+            <p className={cn(
+              "text-[26px] font-bold leading-none tracking-tight tabular-nums",
+              card.alert ? "text-red-500" : "text-gray-900",
+            )}>
+              {card.value}
+            </p>
+            <p className="text-xs text-gray-400 mt-1.5">{card.sub}</p>
+          </Link>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 }

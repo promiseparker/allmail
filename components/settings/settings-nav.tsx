@@ -27,8 +27,8 @@ export function SettingsNav() {
             className={cn(
               "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors",
               isActive
-                ? "bg-primary-50 text-primary font-medium"
-                : "text-gray-600 hover:bg-surface-muted hover:text-gray-900"
+                ? "bg-gray-100 text-gray-900 font-medium"
+                : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
             )}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />

@@ -15,7 +15,7 @@ export default async function GeneralSettingsPage() {
     select: {
       name:      true,
       email:     true,
-      avatarUrl: true,
+      image:     true,
       timezone:  true,
       settings:  true,
     },
@@ -27,7 +27,7 @@ export default async function GeneralSettingsPage() {
     <ProfileForm
       initialName={user?.name ?? ""}
       email={user?.email ?? session.user.email ?? ""}
-      avatarUrl={user?.avatarUrl ?? null}
+      avatarUrl={user?.image ?? null}
       initialTimezone={user?.timezone ?? "UTC"}
       initialView={settings.defaultView}
       initialWeekStart={settings.weekStartsOn}

@@ -20,12 +20,12 @@ function deriveKey(userId: string): Buffer {
     .subarray(0, KEY_LENGTH);
 }
 
-export interface EncryptedData {
-  ciphertext: Buffer;
-  iv: Buffer;
-}
-
-export function encryptToken(plaintext: string, userId: string): EncryptedData {
+/**
+ * Encrypt a plaintext token.
+ * Returns a single Buffer with the format: [IV (12 bytes)][ciphertext][authTag (16 bytes)]
+ * The IV is embedded so each token is self-contained and can be decrypted independently.
+ */
+export function encryptToken(plaintext: string, userId: string): Buffer {
   const key = deriveKey(userId);
   const iv = randomBytes(IV_LENGTH);
 
@@ -36,28 +36,26 @@ export function encryptToken(plaintext: string, userId: string): EncryptedData {
   ]);
   const authTag = cipher.getAuthTag();
 
-  // Append auth tag to ciphertext
-  const ciphertext = Buffer.concat([encrypted, authTag]);
-
-  return { ciphertext, iv };
+  // Layout: IV | ciphertext | authTag
+  return Buffer.concat([iv, encrypted, authTag]);
 }
 
-export function decryptToken(
-  ciphertext: Buffer,
-  iv: Buffer,
-  userId: string
-): string {
+/**
+ * Decrypt a token encrypted by encryptToken.
+ * Extracts the IV from the first 12 bytes of the buffer.
+ */
+export function decryptToken(encryptedBuffer: Buffer, userId: string): string {
   const key = deriveKey(userId);
 
-  // Extract auth tag from end of ciphertext
-  const encryptedData = ciphertext.subarray(0, -AUTH_TAG_LENGTH);
-  const authTag = ciphertext.subarray(-AUTH_TAG_LENGTH);
+  const iv          = encryptedBuffer.subarray(0, IV_LENGTH);
+  const authTag     = encryptedBuffer.subarray(-AUTH_TAG_LENGTH);
+  const ciphertext  = encryptedBuffer.subarray(IV_LENGTH, -AUTH_TAG_LENGTH);
 
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
 
   return Buffer.concat([
-    decipher.update(encryptedData),
+    decipher.update(ciphertext),
     decipher.final(),
   ]).toString("utf8");
 }

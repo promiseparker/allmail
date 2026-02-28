@@ -23,13 +23,13 @@ interface BurnoutPanelProps {
 export function BurnoutPanel({ alerts }: BurnoutPanelProps) {
   if (alerts.length === 0) {
     return (
-      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
-        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+      <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl p-4">
+        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
           <span className="text-base">✅</span>
         </div>
         <div>
-          <p className="text-sm font-medium text-green-800">No burnout signals detected</p>
-          <p className="text-xs text-green-600 mt-0.5">Your workload looks healthy in this period.</p>
+          <p className="text-sm font-medium text-gray-700">No burnout signals detected</p>
+          <p className="text-xs text-gray-500 mt-0.5">Your workload looks healthy in this period.</p>
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { format, addWeeks, subWeeks, addMonths, subMonths, addDays, subDays, startOfWeek, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { CalendarView } from "@/types/events";
@@ -64,8 +64,20 @@ export function CalendarToolbar({
         <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
       </div>
 
-      {/* View switcher */}
-      <div className="flex items-center bg-surface-muted rounded-md p-0.5 border border-border">
+      <div className="flex items-center gap-3">
+        {/* New event — opens Google Calendar to create */}
+        <a
+          href="https://calendar.google.com/calendar/r/eventedit"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 bg-primary text-white text-xs font-medium px-3 py-1.5 rounded-md hover:bg-primary-700 transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          New event
+        </a>
+
+        {/* View switcher */}
+        <div className="flex items-center bg-surface-muted rounded-md p-0.5 border border-border">
         {(["day", "week", "month"] as const).map((v) => (
           <button
             key={v}
@@ -80,6 +92,7 @@ export function CalendarToolbar({
             {v}
           </button>
         ))}
+        </div>
       </div>
     </div>
   );

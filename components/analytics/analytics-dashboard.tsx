@@ -36,7 +36,7 @@ function SectionCard({
   children:  React.ReactNode;
 }) {
   return (
-    <div className="bg-white border border-border rounded-xl p-5 shadow-card">
+    <div className="bg-white border border-gray-100 rounded-xl p-5">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         {subtitle && <p className="text-[11px] text-gray-400 mt-0.5">{subtitle}</p>}
@@ -48,12 +48,12 @@ function SectionCard({
 
 function SkeletonCard({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="bg-white border border-border rounded-xl p-5 shadow-card animate-pulse">
-      <div className="h-4 w-28 bg-surface-subtle rounded mb-4" />
+    <div className="bg-white border border-gray-100 rounded-xl p-5 animate-pulse">
+      <div className="h-4 w-28 bg-gray-100 rounded mb-4" />
       {Array.from({ length: rows }).map((_, i) => (
         <div
           key={i}
-          className="h-3 bg-surface-subtle rounded mb-2 last:mb-0"
+          className="h-3 bg-gray-100 rounded mb-2 last:mb-0"
           style={{ width: `${60 + (i % 3) * 15}%` }}
         />
       ))}
@@ -142,7 +142,7 @@ export function AnalyticsDashboard() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {/* Period selector */}
-          <div className="flex items-center gap-0.5 bg-surface-muted rounded-lg p-1">
+          <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-1">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
@@ -171,7 +171,7 @@ export function AnalyticsDashboard() {
         {analytics && (
           <button
             onClick={() => exportToCSV(analytics, period)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-border rounded-md px-3 py-1.5 hover:bg-surface-muted transition-colors"
+            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-100 rounded-md px-3 py-1.5 hover:bg-gray-50 transition-colors"
           >
             <Download className="w-3.5 h-3.5" />
             Export CSV
@@ -185,12 +185,12 @@ export function AnalyticsDashboard() {
           {Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border border-border rounded-xl p-4 shadow-card animate-pulse"
+              className="bg-white border border-gray-100 rounded-xl p-4 animate-pulse"
             >
-              <div className="w-8 h-8 bg-surface-subtle rounded-lg mb-3" />
-              <div className="h-6 w-14 bg-surface-subtle rounded mb-1.5" />
-              <div className="h-3 w-20 bg-surface-subtle rounded mb-1" />
-              <div className="h-2.5 w-24 bg-surface-subtle rounded" />
+              <div className="w-8 h-8 bg-gray-100 rounded-lg mb-3" />
+              <div className="h-6 w-14 bg-gray-100 rounded mb-1.5" />
+              <div className="h-3 w-20 bg-gray-100 rounded mb-1" />
+              <div className="h-2.5 w-24 bg-gray-100 rounded" />
             </div>
           ))}
         </div>
@@ -276,7 +276,7 @@ export function AnalyticsDashboard() {
 
                 {(analytics.busiestDate || analytics.busiestHour !== null) && (
                   <SectionCard title="Peak times">
-                    <div className="space-y-0 divide-y divide-border">
+                    <div className="space-y-0 divide-y divide-gray-100">
                       {analytics.busiestDate && (
                         <div className="flex items-center justify-between py-2.5">
                           <p className="text-xs text-gray-500">Busiest day</p>
@@ -312,7 +312,7 @@ export function AnalyticsDashboard() {
 
       {/* Error state */}
       {isError && (
-        <div className="bg-white border border-conflict-hard/30 rounded-xl p-8 text-center shadow-card">
+        <div className="bg-white border border-conflict-hard/30 rounded-xl p-8 text-center">
           <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-3">
             <AlertTriangle className="w-5 h-5 text-conflict-hard" />
           </div>
@@ -322,7 +322,7 @@ export function AnalyticsDashboard() {
           </p>
           <button
             onClick={() => refetch()}
-            className="text-xs text-primary hover:underline font-medium"
+            className="text-xs text-gray-500 hover:underline font-medium"
           >
             Try again →
           </button>

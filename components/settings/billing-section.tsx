@@ -89,7 +89,7 @@ export function BillingSection({
           className={`rounded-xl p-4 border ${
             isPro
               ? "bg-primary-50 border-primary/20"
-              : "bg-surface-muted border-border"
+              : "bg-surface-muted border-gray-100"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -113,7 +113,7 @@ export function BillingSection({
               <button
                 onClick={openPortal}
                 disabled={loading === "portal"}
-                className="flex items-center gap-1.5 text-sm font-medium border border-border bg-white px-4 py-2 rounded-md hover:bg-surface-subtle transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 text-sm font-medium border border-gray-100 bg-white px-4 py-2 rounded-md hover:bg-surface-subtle transition-colors disabled:opacity-50"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 {loading === "portal" ? "Loading…" : "Manage billing"}
@@ -125,7 +125,7 @@ export function BillingSection({
         </div>
 
         {/* Usage stats */}
-        <div className="bg-white border border-border rounded-xl p-5 shadow-card">
+        <div className="bg-white border border-gray-100 rounded-xl p-5 ">
           <h3 className="text-sm font-semibold text-gray-900 mb-4">Usage</h3>
           <div className="space-y-4">
 
@@ -138,7 +138,7 @@ export function BillingSection({
                 </span>
               </div>
               {accountLimit !== Infinity && (
-                <div className="w-full bg-surface-subtle rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-700 ${
                       accountUsagePct >= 1
@@ -159,7 +159,7 @@ export function BillingSection({
             </div>
 
             {/* Sync interval */}
-            <div className="flex items-center justify-between py-2.5 border-t border-border">
+            <div className="flex items-center justify-between py-2.5 border-t border-gray-100">
               <span className="text-xs text-gray-600">Sync interval</span>
               <span className="text-xs font-semibold text-gray-900">
                 Every {limits.syncIntervalMinutes}{" "}
@@ -168,7 +168,7 @@ export function BillingSection({
             </div>
 
             {/* Conflict lookback */}
-            <div className="flex items-center justify-between py-2.5 border-t border-border">
+            <div className="flex items-center justify-between py-2.5 border-t border-gray-100">
               <span className="text-xs text-gray-600">Conflict lookback</span>
               <span className="text-xs font-semibold text-gray-900">
                 {limits.conflictLookbackDays} days
@@ -176,7 +176,7 @@ export function BillingSection({
             </div>
 
             {/* Analytics */}
-            <div className="flex items-center justify-between py-2.5 border-t border-border">
+            <div className="flex items-center justify-between py-2.5 border-t border-gray-100">
               <span className="text-xs text-gray-600">Analytics</span>
               <span className={`text-xs font-semibold ${limits.analyticsEnabled ? "text-green-600" : "text-gray-400"}`}>
                 {limits.analyticsEnabled ? "Enabled" : "Not available"}
@@ -189,7 +189,7 @@ export function BillingSection({
         {!isPro && (
           <div className="grid grid-cols-2 gap-4">
             {/* Free card */}
-            <div className="bg-white border border-border rounded-xl p-5 shadow-card">
+            <div className="bg-white border border-gray-100 rounded-xl p-5 ">
               <h3 className="text-sm font-semibold text-gray-900 mb-1">Free</h3>
               <p className="text-2xl font-bold text-gray-900 mb-4">
                 $0{" "}
@@ -203,13 +203,13 @@ export function BillingSection({
                   </li>
                 ))}
               </ul>
-              <div className="py-2 text-center text-xs font-medium text-gray-400 border border-border rounded-md bg-surface-muted">
+              <div className="py-2 text-center text-xs font-medium text-gray-400 border border-gray-100 rounded-md bg-surface-muted">
                 Current plan
               </div>
             </div>
 
             {/* Pro card */}
-            <div className="bg-white border-2 border-primary rounded-xl p-5 shadow-card relative overflow-hidden">
+            <div className="bg-white border-2 border-primary rounded-xl p-5  relative overflow-hidden">
               <div className="absolute top-3 right-3 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                 POPULAR
               </div>
@@ -240,7 +240,7 @@ export function BillingSection({
 
         {/* Pro feature list */}
         {isPro && (
-          <div className="bg-white border border-border rounded-xl p-5 shadow-card">
+          <div className="bg-white border border-gray-100 rounded-xl p-5 ">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Your Pro features</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {PRO_FEATURES.map((f) => (

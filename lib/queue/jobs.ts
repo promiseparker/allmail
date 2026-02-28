@@ -1,6 +1,12 @@
 import { Queue, Worker, Job } from "bullmq";
 import { getIORedis } from "@/lib/redis";
 
+// Check if Redis is configured for BullMQ
+const hasRedis =
+  process.env.REDIS_URL &&
+  !process.env.REDIS_URL.includes("localhost") &&
+  process.env.REDIS_URL !== "redis://localhost:6379";
+
 // ============================================================
 // JOB DEFINITIONS
 // ============================================================
@@ -64,13 +70,15 @@ export async function enqueueFullSync(
   connectedAccountId: string,
   delayMs = 0
 ): Promise<void> {
+  if (!hasRedis) {
+    const { fullSync } = await import("@/lib/sync/engine");
+    await fullSync(connectedAccountId);
+    return;
+  }
   await getSyncQueue().add(
     "full-sync",
     { type: "full_sync", connectedAccountId },
-    {
-      delay: delayMs,
-      jobId: `full-sync:${connectedAccountId}`, // Dedup: only one full sync per account
-    }
+    { delay: delayMs, jobId: `full-sync:${connectedAccountId}` }
   );
 }
 
@@ -78,12 +86,15 @@ export async function enqueueDeltaSync(
   calendarId: string,
   userId: string
 ): Promise<void> {
+  if (!hasRedis) {
+    const { deltaSync } = await import("@/lib/sync/engine");
+    await deltaSync(calendarId, userId);
+    return;
+  }
   await getSyncQueue().add(
     "delta-sync",
     { type: "delta_sync", calendarId, userId },
-    {
-      jobId: `delta:${calendarId}`, // Dedup
-    }
+    { jobId: `delta:${calendarId}` }
   );
 }
 
@@ -91,6 +102,12 @@ export async function enqueueSetupCalendars(
   connectedAccountId: string,
   userId: string
 ): Promise<void> {
+  if (!hasRedis) {
+    const { setupCalendars, fullSync } = await import("@/lib/sync/engine");
+    await setupCalendars(connectedAccountId, userId);
+    await fullSync(connectedAccountId);
+    return;
+  }
   await getSyncQueue().add(
     "setup-calendars",
     { type: "setup_calendars", connectedAccountId, userId }

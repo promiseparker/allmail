@@ -26,7 +26,6 @@ export class GoogleCalendarClient {
 
     let accessToken = decryptToken(
       Buffer.from(tokenRecord.accessTokenEnc),
-      Buffer.from(tokenRecord.iv),
       this.userId
     );
 
@@ -47,12 +46,10 @@ export class GoogleCalendarClient {
 
   private async refreshAccessToken(tokenRecord: {
     refreshTokenEnc: Buffer | Uint8Array;
-    iv: Buffer | Uint8Array;
     id: string;
   }): Promise<string> {
     const refreshToken = decryptToken(
       Buffer.from(tokenRecord.refreshTokenEnc),
-      Buffer.from(tokenRecord.iv),
       this.userId
     );
 
@@ -77,17 +74,13 @@ export class GoogleCalendarClient {
       expires_in: number;
     };
 
-    const newIv = Buffer.from(
-      Array.from({ length: 12 }, () => Math.floor(Math.random() * 256))
-    );
-    const { ciphertext } = encryptToken(data.access_token, this.userId);
+    const newAccessEnc = encryptToken(data.access_token, this.userId);
 
     await db.oAuthToken.update({
       where: { id: tokenRecord.id },
       data: {
-        accessTokenEnc: ciphertext,
+        accessTokenEnc: newAccessEnc,
         expiresAt: new Date(Date.now() + data.expires_in * 1000),
-        iv: newIv,
         updatedAt: new Date(),
       },
     });
@@ -170,6 +163,36 @@ export class GoogleCalendarClient {
     await cal.channels.stop({
       requestBody: { id: channelId, resourceId },
     });
+  }
+
+  async createEvent(
+    calendarId: string,
+    params: {
+      title: string;
+      startTime: string;
+      endTime: string;
+      description?: string;
+      location?: string;
+    }
+  ): Promise<{ id: string; htmlLink?: string }> {
+    const auth = await this.getAuthClient();
+    const cal = google.calendar({ version: "v3", auth });
+
+    const response = await cal.events.insert({
+      calendarId,
+      requestBody: {
+        summary: params.title,
+        description: params.description,
+        location: params.location,
+        start: { dateTime: params.startTime },
+        end: { dateTime: params.endTime },
+      },
+    });
+
+    return {
+      id: response.data.id!,
+      htmlLink: response.data.htmlLink ?? undefined,
+    };
   }
 }
 

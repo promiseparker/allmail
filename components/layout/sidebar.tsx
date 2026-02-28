@@ -1,23 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import logo from "@/public/logo.png";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Calendar, AlertTriangle, BarChart3,
-  Link2, Settings, HelpCircle, LogOut
+  Link2, Settings, LogOut,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/calendar", icon: Calendar, label: "Calendar" },
-  { href: "/conflicts", icon: AlertTriangle, label: "Conflicts" },
-  { href: "/analytics", icon: BarChart3, label: "Analytics" },
+  { href: "/calendar",  icon: Calendar,         label: "Calendar"  },
+  { href: "/conflicts", icon: AlertTriangle,     label: "Conflicts" },
+  { href: "/analytics", icon: BarChart3,         label: "Analytics" },
 ];
 
 const bottomItems = [
-  { href: "/accounts", icon: Link2, label: "Accounts" },
+  { href: "/accounts", icon: Link2,    label: "Accounts" },
   { href: "/settings", icon: Settings, label: "Settings" },
 ];
 
@@ -25,16 +27,16 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-14 bg-sidebar-bg flex flex-col items-center py-3 border-r border-white/5 flex-shrink-0 group hover:w-52 transition-all duration-200 overflow-hidden">
+    <aside className="w-[72px] bg-white flex flex-col items-center py-5 border-r border-gray-100 flex-shrink-0">
       {/* Logo */}
-      <div className="w-8 h-8 rounded-md bg-primary flex items-center justify-center mb-6 flex-shrink-0">
-        <Calendar className="w-4 h-4 text-white" />
+      <div className="mb-6 flex-shrink-0 flex items-center justify-center w-full px-2.5">
+        <Image src={logo} alt="SyncOne" height={18} style={{ width: "auto" }} priority />
       </div>
 
       {/* Main nav */}
-      <nav className="flex-1 flex flex-col gap-0.5 w-full px-2">
+      <nav className="flex-1 flex flex-col items-center gap-0.5 w-full px-2.5">
         {navItems.map((item) => (
-          <SidebarItem
+          <NavItem
             key={item.href}
             href={item.href}
             icon={item.icon}
@@ -44,10 +46,12 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom nav */}
-      <div className="flex flex-col gap-0.5 w-full px-2 pb-2 border-t border-white/5 pt-2">
+      {/* Bottom utilities */}
+      <div className="flex flex-col items-center gap-0.5 w-full px-2.5">
+        <div className="w-6 h-px bg-gray-100 mb-2" />
+
         {bottomItems.map((item) => (
-          <SidebarItem
+          <NavItem
             key={item.href}
             href={item.href}
             icon={item.icon}
@@ -55,22 +59,23 @@ export function Sidebar() {
             active={pathname.startsWith(item.href)}
           />
         ))}
+
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="sidebar-item w-full"
           aria-label="Sign out"
+          className="flex flex-col items-center gap-1 w-full py-2 rounded-xl text-gray-400 hover:text-gray-500 transition-colors duration-150 select-none cursor-pointer"
         >
-          <LogOut className="w-4 h-4 flex-shrink-0" />
-          <span className="text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            Sign out
-          </span>
+          <div className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors duration-150">
+            <LogOut className="w-[17px] h-[17px]" />
+          </div>
+          <span className="text-[10px] font-medium leading-none">Out</span>
         </button>
       </div>
     </aside>
   );
 }
 
-function SidebarItem({
+function NavItem({
   href,
   icon: Icon,
   label,
@@ -84,11 +89,21 @@ function SidebarItem({
   return (
     <Link
       href={href}
-      className={cn("sidebar-item", active && "active")}
       title={label}
+      className={cn(
+        "flex flex-col items-center gap-1 w-full py-2 rounded-xl transition-colors duration-150 select-none",
+        active ? "text-primary" : "text-gray-400 hover:text-gray-600",
+      )}
     >
-      <Icon className="w-4 h-4 flex-shrink-0" />
-      <span className="text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div
+        className={cn(
+          "w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150",
+          active ? "bg-primary/[0.08]" : "hover:bg-gray-50",
+        )}
+      >
+        <Icon className="w-[17px] h-[17px]" />
+      </div>
+      <span className="text-[10px] font-medium leading-none tracking-wide">
         {label}
       </span>
     </Link>

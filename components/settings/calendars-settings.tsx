@@ -26,7 +26,7 @@ interface CalendarsSettingsProps {
 }
 
 const PRESET_COLORS = [
-  "#2563EB", "#7C3AED", "#DB2777", "#DC2626",
+  "#0055FF", "#7C3AED", "#DB2777", "#DC2626",
   "#D97706", "#059669", "#0891B2", "#6B7280",
 ];
 
@@ -91,7 +91,7 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
 
   if (totalCalendars === 0) {
     return (
-      <div className="bg-white border border-border rounded-xl p-10 text-center shadow-card">
+      <div className="bg-white border border-gray-100 rounded-xl p-10 text-center ">
         <p className="text-sm text-gray-400">
           No calendars found. Connect an account first.
         </p>
@@ -111,7 +111,7 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search calendars…"
-              className="w-full pl-8 pr-3 py-2 text-sm border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full pl-8 pr-3 py-2 text-sm border border-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
           <p className="text-xs text-gray-400 tabular-nums flex-shrink-0">
@@ -121,11 +121,11 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
 
         {/* No search results */}
         {filteredGroups.length === 0 && (
-          <div className="bg-white border border-border rounded-xl p-8 text-center shadow-card">
+          <div className="bg-white border border-gray-100 rounded-xl p-8 text-center ">
             <p className="text-sm text-gray-400">No calendars match &ldquo;{search}&rdquo;</p>
             <button
               onClick={() => setSearch("")}
-              className="text-xs text-primary hover:underline mt-1"
+              className="text-xs text-gray-500 hover:underline mt-1"
             >
               Clear search
             </button>
@@ -134,9 +134,9 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
 
         {/* Account groups */}
         {filteredGroups.map((group) => (
-          <div key={group.accountId} className="bg-white border border-border rounded-xl shadow-card overflow-hidden">
+          <div key={group.accountId} className="bg-white border border-gray-100 rounded-xl  overflow-hidden">
             {/* Account header */}
-            <div className="flex items-center gap-2.5 px-4 py-3 bg-surface-muted border-b border-border">
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-gray-50 border-b border-gray-100">
               <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-gray-700 truncate">
@@ -172,7 +172,7 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
                       style={{ backgroundColor: cal.color }}
                     />
                     {colorPicker === cal.id && (
-                      <div className="absolute z-20 top-9 left-0 bg-white border border-border rounded-xl p-3 shadow-modal">
+                      <div className="absolute z-20 top-9 left-0 bg-white border border-gray-100 rounded-xl p-3">
                         <p className="text-[11px] text-gray-500 mb-2 font-medium">
                           Pick a color
                         </p>
@@ -201,7 +201,7 @@ export function CalendarsSettings({ groups }: CalendarsSettingsProps) {
                   {/* Saving spinner + toggle */}
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {saving === cal.id && (
-                      <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3.5 h-3.5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                     )}
                     <Toggle
                       checked={cal.isEnabled}

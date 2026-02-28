@@ -37,13 +37,13 @@ export function WorkloadHeatmap({ dailyLoad, period }: WorkloadHeatmapProps) {
   function getCellColor(date: Date): string {
     const key = format(date, "yyyy-MM-dd");
     const hours = dailyLoad[key] ?? 0;
-    if (hours === 0) return "bg-surface-subtle border border-border/60";
+    if (hours === 0) return "bg-gray-100";
     const intensity = Math.min(hours / maxHours, 1);
-    if (intensity < 0.25) return "bg-primary-100";
-    if (intensity < 0.5)  return "bg-primary-200";
-    if (intensity < 0.75) return "bg-primary-400";
-    if (intensity < 0.9)  return "bg-primary-600";
-    return "bg-primary-800";
+    if (intensity < 0.25) return "bg-gray-300";
+    if (intensity < 0.5)  return "bg-gray-400";
+    if (intensity < 0.75) return "bg-gray-500";
+    if (intensity < 0.9)  return "bg-gray-700";
+    return "bg-gray-900";
   }
 
   return (
@@ -105,7 +105,7 @@ export function WorkloadHeatmap({ dailyLoad, period }: WorkloadHeatmapProps) {
                         inFuture
                           ? "opacity-0"
                           : getCellColor(day),
-                        isToday(day) && "ring-1 ring-primary ring-offset-1"
+                        isToday(day) && "ring-1 ring-gray-600 ring-offset-1"
                       )}
                     />
                   );
@@ -119,7 +119,7 @@ export function WorkloadHeatmap({ dailyLoad, period }: WorkloadHeatmapProps) {
       {/* Legend */}
       <div className="flex items-center gap-1.5 mt-3">
         <span className="text-[10px] text-gray-400">Less</span>
-        {["bg-surface-subtle border border-border/60", "bg-primary-100", "bg-primary-200", "bg-primary-400", "bg-primary-600", "bg-primary-800"].map((cls, i) => (
+        {["bg-gray-100", "bg-gray-300", "bg-gray-400", "bg-gray-500", "bg-gray-700", "bg-gray-900"].map((cls, i) => (
           <div key={i} className={cn("w-3 h-3 rounded-sm", cls)} />
         ))}
         <span className="text-[10px] text-gray-400">More</span>

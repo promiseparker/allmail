@@ -3,10 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --font-inter: "Inter", system-ui, sans-serif;
-  }
-
   * {
     @apply border-border;
   }
@@ -18,8 +14,7 @@
   }
 
   body {
-    @apply bg-surface text-gray-900;
-    font-family: var(--font-inter);
+    @apply bg-surface text-gray-900 font-sans;
   }
 
   /* Scrollbar styling */
@@ -65,16 +60,6 @@
     @apply inline-block w-2 h-2 rounded-full flex-shrink-0;
   }
 
-  /* Sidebar icon button */
-  .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sidebar-text
-           hover:bg-sidebar-hover hover:text-sidebar-text-active
-           transition-colors duration-120 cursor-pointer select-none;
-  }
-
-  .sidebar-item.active {
-    @apply bg-sidebar-active text-sidebar-text-active;
-  }
 }
 
 @layer utilities {

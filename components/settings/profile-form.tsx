@@ -108,12 +108,12 @@ export function ProfileForm({
     <>
       <div className="space-y-5">
         {/* Profile */}
-        <section className="bg-white border border-border rounded-xl p-5 shadow-card space-y-4">
+        <section className="bg-white border border-gray-100 rounded-xl p-5  space-y-4">
           <h2 className="text-sm font-semibold text-gray-900">Profile</h2>
 
           {/* Avatar row */}
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-primary-50 border border-border flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100 flex items-center justify-center">
               {avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -122,7 +122,7 @@ export function ProfileForm({
                   className="w-full h-full object-cover"
                 />
               ) : initials ? (
-                <span className="text-lg font-semibold text-primary">
+                <span className="text-lg font-semibold text-gray-700">
                   {initials}
                 </span>
               ) : (
@@ -146,7 +146,7 @@ export function ProfileForm({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full border border-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
 
@@ -158,7 +158,7 @@ export function ProfileForm({
               type="email"
               value={email}
               disabled
-              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-surface-muted text-gray-400 cursor-not-allowed"
+              className="w-full border border-gray-100 rounded-md px-3 py-2 text-sm bg-surface-muted text-gray-400 cursor-not-allowed"
             />
             <p className="text-[11px] text-gray-400 mt-1">
               Email is managed by your sign-in provider and cannot be changed here.
@@ -167,7 +167,7 @@ export function ProfileForm({
         </section>
 
         {/* Preferences */}
-        <section className="bg-white border border-border rounded-xl p-5 shadow-card space-y-4">
+        <section className="bg-white border border-gray-100 rounded-xl p-5  space-y-4">
           <h2 className="text-sm font-semibold text-gray-900">Preferences</h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -180,13 +180,13 @@ export function ProfileForm({
                 value={tzSearch}
                 onChange={(e) => setTzSearch(e.target.value)}
                 placeholder="Search timezones…"
-                className="w-full border border-border rounded-t-md border-b-0 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full border border-gray-100 rounded-t-md border-b-0 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               />
               <select
                 value={timezone}
                 onChange={(e) => { setTimezone(e.target.value); setTzSearch(""); }}
                 size={filteredTimezones.length > 0 ? Math.min(filteredTimezones.length, 5) : 1}
-                className="w-full border border-border rounded-b-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full border border-gray-100 rounded-b-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               >
                 {filteredTimezones.length === 0 ? (
                   <option disabled>No matches</option>
@@ -205,7 +205,7 @@ export function ProfileForm({
               <select
                 value={defaultView}
                 onChange={(e) => setDefaultView(e.target.value as "week" | "month" | "day")}
-                className="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full border border-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               >
                 <option value="week">Week</option>
                 <option value="month">Month</option>
@@ -220,7 +220,7 @@ export function ProfileForm({
               <select
                 value={weekStart}
                 onChange={(e) => setWeekStart(Number(e.target.value) as 0 | 1)}
-                className="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full border border-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               >
                 <option value={1}>Monday</option>
                 <option value={0}>Sunday</option>
@@ -236,7 +236,7 @@ export function ProfileForm({
               <select
                 value={workStart}
                 onChange={(e) => setWorkStart(Number(e.target.value))}
-                className="border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="border border-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i}>{formatHour(i)}</option>
@@ -246,7 +246,7 @@ export function ProfileForm({
               <select
                 value={workEnd}
                 onChange={(e) => setWorkEnd(Number(e.target.value))}
-                className="border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="border border-gray-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i}>{formatHour(i)}</option>

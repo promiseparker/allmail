@@ -35,15 +35,19 @@ export const authOptions: NextAuthOptions = {
       if (account && user) {
         token.userId = user.id;
         token.plan = (user as any).plan ?? "free";
+        token.image = (user as any).image ?? null;
       }
 
-      // Refresh plan on subsequent calls
-      if (token.userId && !token.plan) {
+      // Refresh user data from DB on subsequent calls if missing
+      if (token.userId && (!token.plan || token.image === undefined)) {
         const dbUser = await db.user.findUnique({
           where: { id: token.userId as string },
-          select: { plan: true },
+          select: { plan: true, image: true },
         });
-        if (dbUser) token.plan = dbUser.plan;
+        if (dbUser) {
+          token.plan = dbUser.plan;
+          token.image = dbUser.image ?? null;
+        }
       }
 
       return token;
@@ -53,6 +57,7 @@ export const authOptions: NextAuthOptions = {
       if (token.userId) {
         session.user.id = token.userId as string;
         session.user.plan = token.plan as string;
+        session.user.image = token.image as string | null;
       }
       return session;
     },

@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   description:
     "Connect Google Calendar and Outlook in one intelligent dashboard. Detect scheduling conflicts, find free time, and gain workload insights.",
   keywords: ["calendar", "scheduling", "productivity", "google calendar", "outlook"],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     type: "website",
     siteName: "SyncOne",
@@ -30,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="bg-surface text-gray-900 antialiased">
+      <body className={`${inter.className} bg-surface text-gray-900 antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

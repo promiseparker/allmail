@@ -48,15 +48,15 @@ export function WeeklyTrend({ data }: WeeklyTrendProps) {
       >
         <defs>
           <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2563EB" stopOpacity="0.15" />
-            <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+            <stop offset="0%" stopColor="#6B7280" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="#6B7280" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path d={areaPath} fill="url(#sparkGrad)" />
-        <path d={path} fill="none" stroke="#2563EB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={path} fill="none" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         {/* Current week dot */}
         {pts[pts.length - 1] && (
-          <circle cx={pts[pts.length - 1]!.x} cy={pts[pts.length - 1]!.y} r="2" fill="#2563EB" />
+          <circle cx={pts[pts.length - 1]!.x} cy={pts[pts.length - 1]!.y} r="2" fill="#111827" />
         )}
       </svg>
 
@@ -70,7 +70,7 @@ export function WeeklyTrend({ data }: WeeklyTrendProps) {
               <div
                 className={cn(
                   "w-full rounded-sm transition-all duration-500",
-                  isLast ? "bg-primary" : "bg-primary-200 group-hover:bg-primary-300"
+                  isLast ? "bg-gray-800" : "bg-gray-200 group-hover:bg-gray-300"
                 )}
                 style={{ height: Math.max(heightPct * 0.4, week.hours > 0 ? 2 : 0) }}
               />
@@ -83,13 +83,13 @@ export function WeeklyTrend({ data }: WeeklyTrendProps) {
       </div>
 
       {/* Summary */}
-      <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
         <p className="text-xs text-gray-500">
           Last week: <span className="font-semibold text-gray-900">{lastWeek.hours}h</span>
         </p>
         <p className={cn(
           "text-xs font-medium",
-          trend === "up" ? "text-conflict-soft" : trend === "down" ? "text-green-600" : "text-gray-400"
+          trend === "up" ? "text-gray-600" : trend === "down" ? "text-gray-600" : "text-gray-400"
         )}>
           {trend === "up" ? "↑ More than prior week" : trend === "down" ? "↓ Less than prior week" : "→ Same as prior week"}
         </p>

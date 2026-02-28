@@ -1,8 +1,10 @@
 import { db } from "@/lib/db";
 import { GoogleCalendarClient } from "@/lib/providers/google/client";
 import { MicrosoftCalendarClient } from "@/lib/providers/microsoft/client";
+import { CaldavCalendarClient } from "@/lib/providers/caldav/client";
 import { mapGoogleEvent } from "@/lib/providers/google/mapper";
 import { mapMicrosoftEvent } from "@/lib/providers/microsoft/mapper";
+import { mapCaldavEvents } from "@/lib/providers/caldav/mapper";
 import { detectAndSaveConflicts } from "@/lib/conflicts/detector";
 import { cache, cacheKey } from "@/lib/redis";
 import type { NormalizedEvent } from "@/types/events";
@@ -136,6 +138,8 @@ async function syncCalendar(
     await syncGoogleCalendar(calendar, connectedAccount.id, userId, type, result);
   } else if (connectedAccount.provider === "microsoft") {
     await syncMicrosoftCalendar(calendar, connectedAccount.id, userId, type, result);
+  } else if (connectedAccount.provider === "caldav") {
+    await syncCaldavCalendar(calendar, connectedAccount.id, userId, result);
   }
 
   return result;
@@ -212,6 +216,28 @@ async function syncMicrosoftCalendar(
   result.nextDeltaLink = nextDeltaLink;
 }
 
+async function syncCaldavCalendar(
+  calendar: { id: string; providerCalendarId: string },
+  connectedAccountId: string,
+  userId: string,
+  result: SyncResult
+): Promise<void> {
+  const client = new CaldavCalendarClient(connectedAccountId, userId);
+
+  const objects = await client.listEvents(calendar.providerCalendarId);
+
+  const normalized = objects.flatMap((obj) =>
+    mapCaldavEvents(obj.data ?? "", obj.url ?? "", obj.etag ?? undefined)
+  );
+
+  if (normalized.length > 0) {
+    const batchResult = await upsertEvents(normalized, calendar.id, userId, "caldav");
+    result.created += batchResult.created;
+    result.updated += batchResult.updated;
+    result.deleted += batchResult.deleted;
+  }
+}
+
 // ============================================================
 // UPSERT EVENTS IN BATCHES
 // ============================================================
@@ -220,7 +246,7 @@ async function upsertEvents(
   events: NormalizedEvent[],
   calendarId: string,
   userId: string,
-  provider: "google" | "microsoft"
+  provider: "google" | "microsoft" | "caldav"
 ): Promise<{ created: number; updated: number; deleted: number }> {
   let created = 0;
   let updated = 0;
@@ -355,6 +381,37 @@ export async function setupCalendars(connectedAccountId: string, userId: string)
         },
         update: {
           name: cal.name,
+        },
+      });
+    }
+  } else if (account.provider === "caldav") {
+    const client = new CaldavCalendarClient(connectedAccountId, userId);
+    const davCalendars = await client.listCalendars();
+
+    for (const cal of davCalendars) {
+      if (!cal.url) continue;
+      // Only include VEVENT calendars (skip VTODO / VJOURNAL)
+      const components = cal.components ?? [];
+      if (components.length > 0 && !components.includes("VEVENT")) continue;
+
+      await db.calendar.upsert({
+        where: {
+          connectedAccountId_providerCalendarId: {
+            connectedAccountId,
+            providerCalendarId: cal.url,
+          },
+        },
+        create: {
+          connectedAccountId,
+          providerCalendarId: cal.url,
+          name: (cal.displayName as string | undefined) ?? cal.url,
+          color: "#6B7280",
+          isPrimary: false,
+          accessRole: "reader",
+          timezone: (cal.timezone as string | undefined) ?? null,
+        },
+        update: {
+          name: (cal.displayName as string | undefined) ?? cal.url,
         },
       });
     }

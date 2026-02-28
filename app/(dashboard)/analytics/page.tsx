@@ -16,7 +16,7 @@ export default async function AnalyticsPage() {
     return (
       <div className="p-6 max-w-2xl mx-auto">
         <h1 className="text-xl font-semibold text-gray-900 mb-6">Analytics</h1>
-        <div className="bg-white border border-border rounded-xl p-10 text-center">
+        <div className="bg-white border border-gray-100 rounded-xl p-10 text-center">
           <BarChart3 className="w-10 h-10 text-gray-300 mx-auto mb-4" />
           <h2 className="text-base font-semibold text-gray-900 mb-2">Analytics requires Pro</h2>
           <p className="text-sm text-gray-500 mb-6">

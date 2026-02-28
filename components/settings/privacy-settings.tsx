@@ -58,7 +58,7 @@ export function PrivacySettings() {
     <>
       <div className="space-y-5">
         {/* Data export */}
-        <section className="bg-white border border-border rounded-xl p-5 shadow-card">
+        <section className="bg-white border border-gray-100 rounded-xl p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-sm font-semibold text-gray-900">
@@ -72,7 +72,7 @@ export function PrivacySettings() {
             <button
               onClick={exportData}
               disabled={isExporting}
-              className="flex items-center gap-1.5 text-sm font-medium border border-border text-gray-700 px-4 py-2 rounded-md hover:bg-surface-muted transition-colors disabled:opacity-50 flex-shrink-0"
+              className="flex items-center gap-1.5 text-sm font-medium border border-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 flex-shrink-0"
             >
               <Download className="w-4 h-4" />
               {isExporting ? "Exporting…" : "Export JSON"}
@@ -81,7 +81,7 @@ export function PrivacySettings() {
         </section>
 
         {/* Delete account */}
-        <section className="bg-white border border-red-200 rounded-xl p-5 shadow-card">
+        <section className="bg-white border border-red-200 rounded-xl p-5">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0 mt-0.5">
               <Trash2 className="w-4 h-4 text-conflict-hard" />

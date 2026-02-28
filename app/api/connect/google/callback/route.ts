@@ -82,15 +82,9 @@ export async function GET(req: NextRequest) {
     picture: string;
   };
 
-  // Encrypt tokens
-  const { ciphertext: accessEnc, iv } = encryptToken(
-    tokens.access_token,
-    session.user.id
-  );
-  const { ciphertext: refreshEnc } = encryptToken(
-    tokens.refresh_token,
-    session.user.id
-  );
+  // Encrypt tokens — each call embeds its own IV in the returned buffer
+  const accessEnc  = encryptToken(tokens.access_token, session.user.id);
+  const refreshEnc = encryptToken(tokens.refresh_token, session.user.id);
 
   // Upsert connected account + tokens in a transaction
   const account = await db.$transaction(async (tx) => {
@@ -130,13 +124,11 @@ export async function GET(req: NextRequest) {
         refreshTokenEnc: refreshEnc,
         tokenType: "Bearer",
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-        iv,
       },
       update: {
         accessTokenEnc: accessEnc,
         refreshTokenEnc: refreshEnc,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
-        iv,
         updatedAt: new Date(),
       },
     });
@@ -144,8 +136,8 @@ export async function GET(req: NextRequest) {
     return connectedAccount;
   });
 
-  // Kick off calendar discovery + initial sync
-  await enqueueSetupCalendars(account.id, session.user.id);
+  // Kick off calendar discovery + initial sync in the background
+  enqueueSetupCalendars(account.id, session.user.id).catch(console.error);
 
   return NextResponse.redirect(
     `${process.env.NEXT_PUBLIC_APP_URL}/accounts?connected=google`

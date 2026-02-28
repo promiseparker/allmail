@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================
@@ -83,8 +83,9 @@ enum AttendeeStatus {
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
+  emailVerified     DateTime?
   name              String?
-  avatarUrl         String?
+  image             String?
   timezone          String    @default("UTC")
   plan              Plan      @default(free)
   planExpiresAt     DateTime?
@@ -119,13 +120,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
+  refresh_token              String? @db.Text
+  access_token               String? @db.Text
+  expires_at                 Int?
+  token_type                 String?
+  scope                      String?
+  id_token                   String? @db.Text
+  session_state              String?
+  refresh_token_expires_in   Int?
 
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -197,7 +199,6 @@ model OAuthToken {
   tokenType            String   @default("Bearer")
   expiresAt            DateTime
   refreshExpiresAt     DateTime?
-  iv                   Bytes
   keyVersion           Int      @default(1)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

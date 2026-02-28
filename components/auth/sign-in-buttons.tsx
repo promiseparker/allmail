@@ -13,46 +13,57 @@ export function SignInButtons() {
 
   return (
     <div className="space-y-3">
+      {/* Google */}
       <button
         onClick={() => handleSignIn("google")}
         disabled={!!loading}
-        className="w-full flex items-center justify-center gap-3 border border-border rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-surface-muted transition-colors disabled:opacity-60"
+        className="
+          w-full flex items-center gap-3 px-5 py-4 rounded-xl
+          bg-white border border-gray-200 shadow-sm
+          text-sm font-medium text-gray-700
+          hover:border-[#4285F4]/40 hover:bg-[#4285F4]/[0.03] hover:shadow-md
+          transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+        "
       >
-        {loading === "google" ? (
-          <div className="w-4 h-4 border-2 border-gray-300 border-t-google rounded-full animate-spin" />
-        ) : (
-          <GoogleIcon />
-        )}
-        Continue with Google
+        <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+          {loading === "google"
+            ? <Spinner color="#4285F4" />
+            : <GoogleIcon />}
+        </span>
+        <span className="flex-1 text-center">Continue with Google</span>
+        <span className="w-5 flex-shrink-0" />
       </button>
 
+      {/* Microsoft */}
       <button
         onClick={() => handleSignIn("microsoft")}
         disabled={!!loading}
-        className="w-full flex items-center justify-center gap-3 border border-border rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-surface-muted transition-colors disabled:opacity-60"
+        className="
+          w-full flex items-center gap-3 px-5 py-4 rounded-xl
+          bg-white border border-gray-200 shadow-sm
+          text-sm font-medium text-gray-700
+          hover:border-[#00A4EF]/40 hover:bg-[#00A4EF]/[0.03] hover:shadow-md
+          transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed
+        "
       >
-        {loading === "microsoft" ? (
-          <div className="w-4 h-4 border-2 border-gray-300 border-t-microsoft rounded-full animate-spin" />
-        ) : (
-          <MicrosoftIcon />
-        )}
-        Continue with Microsoft
+        <span className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+          {loading === "microsoft"
+            ? <Spinner color="#00A4EF" />
+            : <MicrosoftIcon />}
+        </span>
+        <span className="flex-1 text-center">Continue with Microsoft</span>
+        <span className="w-5 flex-shrink-0" />
       </button>
-
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-white px-3 text-xs text-gray-400">or</span>
-        </div>
-      </div>
-
-      <p className="text-center text-xs text-gray-400">
-        Sign in with Google to connect your Google Calendar,<br />
-        or Microsoft to connect Outlook.
-      </p>
     </div>
+  );
+}
+
+function Spinner({ color }: { color: string }) {
+  return (
+    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke={color} strokeWidth="3" />
+      <path className="opacity-75" fill={color} d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+    </svg>
   );
 }
 
@@ -70,9 +81,9 @@ function GoogleIcon() {
 function MicrosoftIcon() {
   return (
     <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden>
-      <rect x="1" y="1" width="10" height="10" fill="#F25022" rx="1" />
-      <rect x="13" y="1" width="10" height="10" fill="#7FBA00" rx="1" />
-      <rect x="1" y="13" width="10" height="10" fill="#00A4EF" rx="1" />
+      <rect x="1"  y="1"  width="10" height="10" fill="#F25022" rx="1" />
+      <rect x="13" y="1"  width="10" height="10" fill="#7FBA00" rx="1" />
+      <rect x="1"  y="13" width="10" height="10" fill="#00A4EF" rx="1" />
       <rect x="13" y="13" width="10" height="10" fill="#FFB900" rx="1" />
     </svg>
   );

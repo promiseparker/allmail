@@ -55,10 +55,10 @@ export function NotificationsForm({
   return (
     <>
       <div className="space-y-5">
-        <section className="bg-white border border-border rounded-xl p-5 shadow-card">
+        <section className="bg-white border border-gray-100 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Email notifications</h2>
 
-          <div className="space-y-0 divide-y divide-border">
+          <div className="space-y-0 divide-y divide-gray-100">
             <div className="py-3">
               <Toggle
                 checked={conflictEmail}

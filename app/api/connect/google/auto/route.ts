@@ -3,29 +3,17 @@ import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { encryptToken } from "@/lib/crypto";
 import { enqueueSetupCalendars } from "@/lib/queue/jobs";
-import { PLAN_LIMITS } from "@/types/api";
-import type { Plan } from "@/types/api";
 
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-// GET /api/connect/google — connect Google Calendar using existing sign-in tokens
-export async function GET() {
+// POST /api/connect/google/auto
+// Connects Google Calendar using the tokens already stored by NextAuth on sign-in.
+// No extra OAuth redirect needed.
+export async function POST() {
   const session = await requireAuth();
 
-  // Check plan limits
-  const accountCount = await db.connectedAccount.count({
-    where: { userId: session.user.id, isActive: true },
-  });
-
-  const plan = session.user.plan as Plan;
-  const limit = PLAN_LIMITS[plan].connectedAccounts;
-
-  if (accountCount >= limit) {
-    return NextResponse.redirect(`${APP_URL}/accounts?error=plan_limit`);
-  }
-
-  // Use the Google tokens already stored by NextAuth on sign-in
+  // Get the Google tokens NextAuth saved in auth_accounts during sign-in
   const authAccount = await db.account.findFirst({
     where: { userId: session.user.id, provider: "google" },
     select: {
@@ -36,25 +24,40 @@ export async function GET() {
     },
   });
 
-  if (!authAccount?.access_token || !authAccount.refresh_token) {
-    return NextResponse.redirect(`${APP_URL}/accounts?error=no_google_tokens`);
+  if (!authAccount?.access_token) {
+    return NextResponse.json(
+      { error: "No Google account found. Please sign out and sign in again with Google." },
+      { status: 400 }
+    );
   }
 
-  // Fetch user profile
+  if (!authAccount.refresh_token) {
+    return NextResponse.json(
+      { error: "No refresh token available. Please sign out and sign in again to grant offline access." },
+      { status: 400 }
+    );
+  }
+
+  // Fetch user profile from Google
   const userInfoRes = await fetch(GOOGLE_USERINFO_URL, {
     headers: { Authorization: `Bearer ${authAccount.access_token}` },
   });
-  const userInfo = userInfoRes.ok
-    ? (await userInfoRes.json() as { id: string; email: string; name: string; picture: string })
-    : null;
 
+  let userInfo: { id: string; email: string; name: string; picture: string } | null = null;
+  if (userInfoRes.ok) {
+    userInfo = await userInfoRes.json();
+  }
+
+  // Encrypt tokens for storage
   const expiresAt = authAccount.expires_at
     ? new Date(authAccount.expires_at * 1000)
     : new Date(Date.now() + 3600 * 1000);
 
+  // Encrypt tokens — each call embeds its own IV in the returned buffer
   const accessEnc  = encryptToken(authAccount.access_token, session.user.id);
   const refreshEnc = encryptToken(authAccount.refresh_token, session.user.id);
 
+  // Upsert connected account + tokens
   const account = await db.$transaction(async (tx) => {
     const connectedAccount = await tx.connectedAccount.upsert({
       where: {
@@ -104,8 +107,8 @@ export async function GET() {
     return connectedAccount;
   });
 
-  // Fire sync in background — don't await so the response isn't blocked
+  // Fire sync in background — don't block the response
   enqueueSetupCalendars(account.id, session.user.id).catch(console.error);
 
-  return NextResponse.redirect(`${APP_URL}/accounts?connected=google`);
+  return NextResponse.json({ success: true });
 }

@@ -34,7 +34,7 @@ export function MeetingFocusChart({
   const meetingDash = meetingPct * circumference;
   const focusDash   = focusPct   * circumference;
 
-  const meetingColor = "#2563EB"; // primary blue
+  const meetingColor = "#0055FF"; // primary blue
   const focusColor   = "#16A34A"; // green-600
 
   // Inner label

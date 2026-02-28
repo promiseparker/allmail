@@ -10,7 +10,7 @@ export async function GET() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, email: true, timezone: true, plan: true, settings: true, avatarUrl: true },
+    select: { name: true, email: true, timezone: true, plan: true, settings: true, image: true },
   });
 
   if (!user) return NextResponse.json({ error: { code: "not_found" } }, { status: 404 });
@@ -21,7 +21,7 @@ export async function GET() {
       email: user.email,
       timezone: user.timezone,
       plan: user.plan,
-      avatarUrl: user.avatarUrl,
+      avatarUrl: user.image,
       settings: mergeSettings(user.settings),
     },
   });

@@ -134,14 +134,9 @@ export async function GET(req: NextRequest) {
   );
 
   // ── Encrypt tokens ───────────────────────────────────────────────────────
-  const { ciphertext: accessEnc, iv } = encryptToken(
-    tokens.access_token,
-    session.user.id
-  );
-  const { ciphertext: refreshEnc } = encryptToken(
-    tokens.refresh_token,
-    session.user.id
-  );
+  // Each call embeds its own IV in the returned buffer
+  const accessEnc  = encryptToken(tokens.access_token, session.user.id);
+  const refreshEnc = encryptToken(tokens.refresh_token, session.user.id);
 
   // Microsoft refresh tokens follow a 90-day sliding window: each successful
   // refresh issues a new refresh token that resets the 90-day clock.
@@ -190,14 +185,12 @@ export async function GET(req: NextRequest) {
         tokenType: tokens.token_type ?? "Bearer",
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
         refreshExpiresAt,
-        iv,
       },
       update: {
         accessTokenEnc: accessEnc,
         refreshTokenEnc: refreshEnc,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
         refreshExpiresAt,
-        iv,
         updatedAt: new Date(),
       },
     });
@@ -205,8 +198,8 @@ export async function GET(req: NextRequest) {
     return connectedAccount;
   });
 
-  // ── Kick off calendar discovery + initial sync ───────────────────────────
-  await enqueueSetupCalendars(account.id, session.user.id);
+  // ── Kick off calendar discovery + initial sync in the background ─────────
+  enqueueSetupCalendars(account.id, session.user.id).catch(console.error);
 
   return NextResponse.redirect(
     `${process.env.NEXT_PUBLIC_APP_URL}/accounts?connected=microsoft`

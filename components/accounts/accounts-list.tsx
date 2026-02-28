@@ -26,16 +26,38 @@ interface Calendar {
 }
 
 interface Account {
-  id:           string;
-  provider:     "google" | "microsoft";
-  email:        string;
-  displayName:  string | null;
-  avatarUrl:    string | null;
-  syncStatus:   string;
-  lastSyncedAt: string | Date | null;
-  errorMessage: string | null;
-  calendars:    Calendar[];
-  createdAt:    string | Date;
+  id:                string;
+  provider:          "google" | "microsoft" | "caldav";
+  providerAccountId: string;
+  email:             string;
+  displayName:       string | null;
+  avatarUrl:         string | null;
+  syncStatus:        string;
+  lastSyncedAt:      string | Date | null;
+  errorMessage:      string | null;
+  calendars:         Calendar[];
+  createdAt:         string | Date;
+}
+
+function providerBadgeVariant(provider: string): "google" | "microsoft" | "caldav" {
+  if (provider === "google")    return "google";
+  if (provider === "microsoft") return "microsoft";
+  return "caldav";
+}
+
+function providerLabel(provider: string, providerAccountId: string): string {
+  if (provider === "google")    return "Google";
+  if (provider === "microsoft") return "Outlook";
+  // CalDAV — extract platform from providerAccountId (format: "platform:username")
+  const platform = providerAccountId.split(":")[0] ?? "caldav";
+  const labels: Record<string, string> = {
+    apple:     "iCloud",
+    fastmail:  "Fastmail",
+    yahoo:     "Yahoo",
+    nextcloud: "Nextcloud",
+    caldav:    "CalDAV",
+  };
+  return labels[platform] ?? "CalDAV";
 }
 
 interface AccountsListProps {
@@ -101,20 +123,14 @@ export function AccountsList({
   if (accounts.length === 0) {
     return (
       <>
-        <div className="bg-white border border-border rounded-xl p-12 text-center shadow-card">
-          <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center mx-auto mb-4">
-            <Wifi className="w-6 h-6 text-gray-300" />
+        <div className="bg-white border border-gray-100 rounded-xl p-12 text-center">
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <Wifi className="w-6 h-6 text-gray-400" />
           </div>
           <p className="text-sm font-medium text-gray-700">No accounts connected yet</p>
-          <p className="text-xs text-gray-400 mt-1 mb-5">
-            Connect a Google or Outlook account to start syncing your calendars.
+          <p className="text-xs text-gray-400 mt-1">
+            Connect Google, Outlook, Apple iCloud, Fastmail, and more.
           </p>
-          <a
-            href="/api/connect/google"
-            className="inline-flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
-          >
-            Connect Google Calendar
-          </a>
         </div>
         {toast && <Toast message={toast.message} variant={toast.variant} onDismiss={dismiss} />}
       </>
@@ -218,8 +234,8 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
   return (
     <div
       className={cn(
-        "bg-white border rounded-xl shadow-card overflow-hidden transition-colors",
-        isError ? "border-conflict-hard/30" : "border-border"
+        "bg-white border rounded-xl overflow-hidden transition-colors",
+        isError ? "border-conflict-hard/30" : "border-gray-100"
       )}
     >
       {/* ── Card header ── */}
@@ -234,7 +250,9 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
           <div
             className={cn(
               "absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center",
-              account.provider === "google" ? "bg-google" : "bg-microsoft"
+              account.provider === "google"    ? "bg-google"
+              : account.provider === "microsoft" ? "bg-microsoft"
+              : "bg-caldav"
             )}
           >
             <ProviderIcon provider={account.provider} />
@@ -264,15 +282,15 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
 
         {/* Right actions */}
         <div className="flex items-center gap-1 flex-shrink-0">
-          <Badge variant={account.provider === "google" ? "google" : "microsoft"}>
-            {account.provider === "google" ? "Google" : "Outlook"}
+          <Badge variant={providerBadgeVariant(account.provider)}>
+            {providerLabel(account.provider, account.providerAccountId)}
           </Badge>
 
           <button
             onClick={() => syncMutation.mutate()}
             disabled={isSyncing}
             title="Sync now"
-            className="p-1.5 rounded-md hover:bg-surface-muted text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40 ml-1"
+            className="p-1.5 rounded-md hover:bg-gray-50 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-40 ml-1"
           >
             <RefreshCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin")} />
           </button>
@@ -282,7 +300,7 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
               setExpanded(!expanded);
               if (expanded) setShowDisconnectConfirm(false);
             }}
-            className="p-1.5 rounded-md hover:bg-surface-muted text-gray-400 transition-colors"
+            className="p-1.5 rounded-md hover:bg-gray-50 text-gray-400 transition-colors"
           >
             {expanded
               ? <ChevronUp className="w-3.5 h-3.5" />
@@ -305,12 +323,14 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
               >
                 Retry sync
               </button>
-              <a
-                href={`/api/connect/${account.provider}`}
-                className="text-xs font-medium text-conflict-hard underline hover:no-underline"
-              >
-                Reconnect account →
-              </a>
+              {account.provider !== "caldav" && (
+                <a
+                  href={`/api/connect/${account.provider}`}
+                  className="text-xs font-medium text-conflict-hard underline hover:no-underline"
+                >
+                  Reconnect account →
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -318,7 +338,7 @@ function AccountCard({ account, onSuccess, onError }: AccountCardProps) {
 
       {/* ── Expanded section ── */}
       {expanded && (
-        <div className="border-t border-border px-4 pb-4 pt-3">
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3">
           {/* Calendar list */}
           {account.calendars.length > 0 && (
             <>
@@ -421,7 +441,7 @@ function CalendarRow({ calendar }: { calendar: Calendar }) {
       className={cn(
         "flex items-center gap-2.5 py-1.5 px-2 rounded-lg transition-colors",
         !calendar.isEnabled && "opacity-50",
-        "hover:bg-surface-muted"
+        "hover:bg-gray-50"
       )}
     >
       {/* Color dot — click to change color */}
@@ -440,7 +460,7 @@ function CalendarRow({ calendar }: { calendar: Calendar }) {
               onClick={() => setColorOpen(false)}
               aria-hidden
             />
-            <div className="absolute left-0 top-5 z-20 bg-white border border-border rounded-xl shadow-modal p-2 grid grid-cols-6 gap-1 w-[136px] animate-slide-up">
+            <div className="absolute left-0 top-5 z-20 bg-white border border-gray-100 rounded-xl p-2 grid grid-cols-6 gap-1 w-[136px] animate-slide-up">
               {COLOR_PRESETS.map((hex) => (
                 <button
                   key={hex}
@@ -467,7 +487,7 @@ function CalendarRow({ calendar }: { calendar: Calendar }) {
 
       {/* Primary badge */}
       {calendar.isPrimary && (
-        <span className="text-[10px] text-gray-400 bg-surface-muted px-1.5 py-0.5 rounded-full flex-shrink-0">
+        <span className="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
           Primary
         </span>
       )}
@@ -484,23 +504,26 @@ function CalendarRow({ calendar }: { calendar: Calendar }) {
 
 // ── ProviderIcon ──────────────────────────────────────────────────────────────
 
-function ProviderIcon({ provider }: { provider: "google" | "microsoft" }) {
+function ProviderIcon({ provider }: { provider: string }) {
   if (provider === "google") {
     return (
       <svg viewBox="0 0 24 24" className="w-3 h-3" aria-hidden>
-        <path
-          fill="white"
-          d="M12 11h8.533c.044.385.067.78.067 1.184 0 5.063-3.335 8.816-8.6 8.816C6.441 21 2 16.559 2 12S6.441 3 12 3c2.7 0 4.96.99 6.69 2.61l-2.7 2.7C14.93 7.28 13.55 6.8 12 6.8c-2.87 0-5.2 2.33-5.2 5.2s2.33 5.2 5.2 5.2c2.65 0 4.49-1.51 4.93-3.6H12V11z"
-        />
+        <path fill="white" d="M12 11h8.533c.044.385.067.78.067 1.184 0 5.063-3.335 8.816-8.6 8.816C6.441 21 2 16.559 2 12S6.441 3 12 3c2.7 0 4.96.99 6.69 2.61l-2.7 2.7C14.93 7.28 13.55 6.8 12 6.8c-2.87 0-5.2 2.33-5.2 5.2s2.33 5.2 5.2 5.2c2.65 0 4.49-1.51 4.93-3.6H12V11z" />
       </svg>
     );
   }
+  if (provider === "microsoft") {
+    return (
+      <svg viewBox="0 0 24 24" className="w-3 h-3" aria-hidden>
+        <path fill="white" d="M0 0h11.5v11.5H0zm12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zm12.5 0H24V24H12.5z" />
+      </svg>
+    );
+  }
+  // CalDAV providers — calendar grid icon
   return (
-    <svg viewBox="0 0 24 24" className="w-3 h-3" aria-hidden>
-      <path
-        fill="white"
-        d="M0 0h11.5v11.5H0zm12.5 0H24v11.5H12.5zM0 12.5h11.5V24H0zm12.5 0H24V24H12.5z"
-      />
+    <svg viewBox="0 0 24 24" className="w-3 h-3" aria-hidden fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M8 4V2M16 4V2" />
     </svg>
   );
 }

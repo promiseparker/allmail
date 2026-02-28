@@ -39,8 +39,8 @@ export function StatsGrid({ data }: StatsGridProps) {
       value:   `${data.totalScheduledHours}h`,
       sub:     `across ${data.activeDays} active days`,
       icon:    Clock,
-      iconBg:  "bg-primary-50",
-      iconColor: "text-primary",
+      iconBg:  "bg-gray-100",
+      iconColor: "text-gray-500",
       trend:   <TrendBadge current={data.totalScheduledHours} previous={c.totalScheduledHours} />,
     },
     {
@@ -48,8 +48,8 @@ export function StatsGrid({ data }: StatsGridProps) {
       value:   `${data.averageDailyHours}h`,
       sub:     `on days with events`,
       icon:    TrendingUp,
-      iconBg:  "bg-primary-50",
-      iconColor: "text-primary",
+      iconBg:  "bg-gray-100",
+      iconColor: "text-gray-500",
       trend:   c.activeDays > 0
         ? <TrendBadge
             current={data.activeDays > 0 ? data.totalScheduledHours / data.activeDays : 0}
@@ -62,8 +62,8 @@ export function StatsGrid({ data }: StatsGridProps) {
       value:   `${data.meetingHours}h`,
       sub:     `${meetingPct}% of scheduled time`,
       icon:    Users,
-      iconBg:  meetingPct > 60 ? "bg-amber-50" : "bg-green-50",
-      iconColor: meetingPct > 60 ? "text-amber-600" : "text-green-600",
+      iconBg:  "bg-gray-100",
+      iconColor: "text-gray-500",
       warn:    meetingPct > 70,
       trend:   <TrendBadge current={data.meetingHours} previous={c.meetingHours} />,
     },
@@ -72,8 +72,8 @@ export function StatsGrid({ data }: StatsGridProps) {
       value:   `${data.focusHours}h`,
       sub:     `${data.totalEvents - data.totalMeetings} solo events`,
       icon:    Target,
-      iconBg:  "bg-green-50",
-      iconColor: "text-green-600",
+      iconBg:  "bg-gray-100",
+      iconColor: "text-gray-500",
       trend:   <TrendBadge current={data.focusHours} previous={c.focusHours} />,
     },
     {
@@ -81,7 +81,7 @@ export function StatsGrid({ data }: StatsGridProps) {
       value:   data.totalEvents,
       sub:     `${data.totalMeetings} meetings · ${data.totalEvents - data.totalMeetings} solo`,
       icon:    Calendar,
-      iconBg:  "bg-surface-muted",
+      iconBg:  "bg-gray-100",
       iconColor: "text-gray-500",
       trend:   <TrendBadge current={data.totalEvents} previous={c.totalEvents} />,
     },
@@ -93,8 +93,8 @@ export function StatsGrid({ data }: StatsGridProps) {
         <div
           key={s.label}
           className={cn(
-            "bg-white border rounded-xl p-4 shadow-card",
-            (s as any).warn ? "border-amber-200" : "border-border"
+            "bg-white border rounded-xl p-4",
+            (s as any).warn ? "border-amber-200" : "border-gray-100"
           )}
         >
           <div className="flex items-start justify-between mb-2">
