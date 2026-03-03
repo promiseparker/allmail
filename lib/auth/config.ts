@@ -24,6 +24,7 @@ export const authOptions: NextAuthOptions = {
             "email",
             "profile",
             "https://www.googleapis.com/auth/calendar.readonly",
+            "https://www.googleapis.com/auth/calendar.events",
           ].join(" "),
         },
       },
@@ -39,7 +40,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Refresh user data from DB on subsequent calls if missing
-      if (token.userId && (!token.plan || token.image === undefined)) {
+      if (token.userId && (!token.plan || !token.image)) {
         const dbUser = await db.user.findUnique({
           where: { id: token.userId as string },
           select: { plan: true, image: true },

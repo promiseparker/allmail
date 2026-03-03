@@ -1,19 +1,27 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { encryptToken } from "@/lib/crypto";
-import { enqueueSetupCalendars } from "@/lib/queue/jobs";
+import { generateSecureState, generateCodeVerifier, generateCodeChallenge } from "@/lib/crypto";
+import { cache, cacheKey, CACHE_TTL } from "@/lib/redis";
 import { PLAN_LIMITS } from "@/types/api";
 import type { Plan } from "@/types/api";
 
-const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL!;
 
-// GET /api/connect/google — connect Google Calendar using existing sign-in tokens
+const GOOGLE_SCOPES = [
+  "openid",
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events",
+].join(" ");
+
+// GET /api/connect/google — initiate Google Calendar OAuth flow with explicit write scope
 export async function GET() {
   const session = await requireAuth();
 
-  // Check plan limits
+  // Check plan limits before starting the flow
   const accountCount = await db.connectedAccount.count({
     where: { userId: session.user.id, isActive: true },
   });
@@ -25,87 +33,28 @@ export async function GET() {
     return NextResponse.redirect(`${APP_URL}/accounts?error=plan_limit`);
   }
 
-  // Use the Google tokens already stored by NextAuth on sign-in
-  const authAccount = await db.account.findFirst({
-    where: { userId: session.user.id, provider: "google" },
-    select: {
-      access_token: true,
-      refresh_token: true,
-      expires_at: true,
-      providerAccountId: true,
-    },
+  const state = generateSecureState();
+  const codeVerifier = generateCodeVerifier();
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+  // Persist state + verifier in cache — consumed once in the callback
+  await cache.set(
+    cacheKey.oauthState(state),
+    { codeVerifier, userId: session.user.id },
+    CACHE_TTL.OAUTH_STATE
+  );
+
+  const params = new URLSearchParams({
+    client_id: process.env.GOOGLE_CLIENT_ID!,
+    redirect_uri: `${APP_URL}/api/connect/google/callback`,
+    response_type: "code",
+    scope: GOOGLE_SCOPES,
+    access_type: "offline",
+    prompt: "consent",          // Always show consent so Google issues a fresh refresh token
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
   });
 
-  if (!authAccount?.access_token || !authAccount.refresh_token) {
-    return NextResponse.redirect(`${APP_URL}/accounts?error=no_google_tokens`);
-  }
-
-  // Fetch user profile
-  const userInfoRes = await fetch(GOOGLE_USERINFO_URL, {
-    headers: { Authorization: `Bearer ${authAccount.access_token}` },
-  });
-  const userInfo = userInfoRes.ok
-    ? (await userInfoRes.json() as { id: string; email: string; name: string; picture: string })
-    : null;
-
-  const expiresAt = authAccount.expires_at
-    ? new Date(authAccount.expires_at * 1000)
-    : new Date(Date.now() + 3600 * 1000);
-
-  const accessEnc  = encryptToken(authAccount.access_token, session.user.id);
-  const refreshEnc = encryptToken(authAccount.refresh_token, session.user.id);
-
-  const account = await db.$transaction(async (tx) => {
-    const connectedAccount = await tx.connectedAccount.upsert({
-      where: {
-        userId_provider_providerAccountId: {
-          userId: session.user.id,
-          provider: "google",
-          providerAccountId: authAccount.providerAccountId,
-        },
-      },
-      create: {
-        userId: session.user.id,
-        provider: "google",
-        providerAccountId: authAccount.providerAccountId,
-        email: userInfo?.email ?? session.user.email ?? "",
-        displayName: userInfo?.name ?? session.user.name ?? "",
-        avatarUrl: userInfo?.picture ?? null,
-        scopes: ["calendar.readonly"],
-        isActive: true,
-        syncStatus: "pending",
-      },
-      update: {
-        isActive: true,
-        email: userInfo?.email ?? session.user.email ?? "",
-        displayName: userInfo?.name ?? session.user.name ?? "",
-        syncStatus: "pending",
-        errorMessage: null,
-      },
-    });
-
-    await tx.oAuthToken.upsert({
-      where: { connectedAccountId: connectedAccount.id },
-      create: {
-        connectedAccountId: connectedAccount.id,
-        accessTokenEnc: accessEnc,
-        refreshTokenEnc: refreshEnc,
-        tokenType: "Bearer",
-        expiresAt,
-      },
-      update: {
-        accessTokenEnc: accessEnc,
-        refreshTokenEnc: refreshEnc,
-        expiresAt,
-        updatedAt: new Date(),
-      },
-    });
-
-    return connectedAccount;
-  });
-
-  // Fire sync in background — don't await so the response isn't blocked
-  enqueueSetupCalendars(account.id, session.user.id).catch(console.error);
-
-  return NextResponse.redirect(`${APP_URL}/accounts?connected=google`);
+  return NextResponse.redirect(`${GOOGLE_AUTH_URL}?${params}`);
 }

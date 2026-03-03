@@ -74,7 +74,7 @@ export async function POST() {
         email: userInfo?.email ?? session.user.email ?? "",
         displayName: userInfo?.name ?? session.user.name ?? "",
         avatarUrl: userInfo?.picture ?? null,
-        scopes: ["calendar.readonly"],
+        scopes: ["calendar.readonly", "calendar.events"],
         isActive: true,
         syncStatus: "pending",
       },

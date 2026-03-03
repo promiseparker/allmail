@@ -173,6 +173,7 @@ export class GoogleCalendarClient {
       endTime: string;
       description?: string;
       location?: string;
+      attendees?: string[];
     }
   ): Promise<{ id: string; htmlLink?: string }> {
     const auth = await this.getAuthClient();
@@ -180,12 +181,14 @@ export class GoogleCalendarClient {
 
     const response = await cal.events.insert({
       calendarId,
+      sendUpdates: "all",   // emails invitations to all attendees
       requestBody: {
         summary: params.title,
         description: params.description,
         location: params.location,
         start: { dateTime: params.startTime },
         end: { dateTime: params.endTime },
+        attendees: params.attendees?.map((email) => ({ email })),
       },
     });
 
@@ -193,6 +196,43 @@ export class GoogleCalendarClient {
       id: response.data.id!,
       htmlLink: response.data.htmlLink ?? undefined,
     };
+  }
+
+  async updateEvent(
+    calendarId: string,
+    eventId: string,
+    params: {
+      title?: string;
+      startTime?: string;
+      endTime?: string;
+      description?: string;
+      location?: string;
+      attendees?: string[];
+    }
+  ): Promise<{ id: string; htmlLink?: string }> {
+    const auth = await this.getAuthClient();
+    const cal = google.calendar({ version: "v3", auth });
+
+    const requestBody: calendar_v3.Schema$Event = {};
+    if (params.title !== undefined)       requestBody.summary     = params.title;
+    if (params.description !== undefined) requestBody.description = params.description;
+    if (params.location !== undefined)    requestBody.location    = params.location;
+    if (params.startTime)                 requestBody.start       = { dateTime: params.startTime };
+    if (params.endTime)                   requestBody.end         = { dateTime: params.endTime };
+    if (params.attendees)                 requestBody.attendees   = params.attendees.map((email) => ({ email }));
+
+    const response = await cal.events.patch({ calendarId, eventId, sendUpdates: "all", requestBody });
+
+    return {
+      id: response.data.id!,
+      htmlLink: response.data.htmlLink ?? undefined,
+    };
+  }
+
+  async deleteEvent(calendarId: string, eventId: string): Promise<void> {
+    const auth = await this.getAuthClient();
+    const cal = google.calendar({ version: "v3", auth });
+    await cal.events.delete({ calendarId, eventId, sendUpdates: "all" });
   }
 }
 

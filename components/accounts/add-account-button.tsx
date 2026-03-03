@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X, Loader2, ChevronLeft, ExternalLink, Clock } from "lucide-react";
+import { Plus, X, ChevronLeft, ExternalLink, Clock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Platform definitions ──────────────────────────────────────────────────────
@@ -135,8 +135,6 @@ interface AddAccountButtonProps {
 export function AddAccountButton({ disabled = false }: AddAccountButtonProps) {
   const [open,     setOpen]     = useState(false);
   const [selected, setSelected] = useState<PlatformDef | null>(null);
-  const [loading,  setLoading]  = useState(false);
-  const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -156,29 +154,9 @@ export function AddAccountButton({ disabled = false }: AddAccountButtonProps) {
     setSelected(null);
   }
 
-  // ── Google: use the auto-connect POST (same Google account as sign-in) ──
-  async function connectGoogle() {
-    setLoading(true);
-    close();
-    try {
-      const res  = await fetch("/api/connect/google/auto", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        router.refresh();
-        router.push("/accounts?connected=google");
-      } else {
-        alert(data.error ?? "Failed to connect Google Calendar. Please try again.");
-      }
-    } catch {
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function handlePlatformClick(p: PlatformDef) {
     if (p.type === "soon") return;
-    if (p.id === "google")    { connectGoogle(); return; }
+    if (p.id === "google")    { window.location.href = "/api/connect/google"; return; }
     if (p.id === "microsoft") { window.location.href = "/api/connect/microsoft"; return; }
     // CalDAV → show form
     setSelected(p);
@@ -192,17 +170,15 @@ export function AddAccountButton({ disabled = false }: AddAccountButtonProps) {
     <div className="relative" ref={panelRef}>
       {/* Trigger button */}
       <button
-        onClick={() => !disabled && !loading && setOpen(!open)}
-        disabled={disabled || loading}
+        onClick={() => !disabled && setOpen(!open)}
+        disabled={disabled}
         className={cn(
           "flex items-center gap-1.5 bg-primary text-white text-sm font-medium px-4 py-2 rounded-md transition-colors",
-          disabled || loading ? "opacity-50 cursor-not-allowed" : "hover:bg-primary-700"
+          disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-primary-700"
         )}
       >
-        {loading
-          ? <Loader2 className="w-4 h-4 animate-spin" />
-          : <Plus className="w-4 h-4" />}
-        {loading ? "Connecting…" : "Add account"}
+        <Plus className="w-4 h-4" />
+        Add account
       </button>
 
       {/* Panel */}

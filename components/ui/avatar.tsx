@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface AvatarProps {
@@ -14,6 +17,8 @@ const sizeMap = {
 };
 
 export function Avatar({ src, name, size = "md", className }: AvatarProps) {
+  const [imgFailed, setImgFailed] = useState(false);
+
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -21,13 +26,14 @@ export function Avatar({ src, name, size = "md", className }: AvatarProps) {
     .toUpperCase()
     .slice(0, 2);
 
-  if (src) {
+  if (src && !imgFailed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt={name}
-        className={cn("rounded-full object-cover", sizeMap[size], className)}
+        onError={() => setImgFailed(true)}
+        className={cn("rounded-full object-cover flex-shrink-0", sizeMap[size], className)}
       />
     );
   }

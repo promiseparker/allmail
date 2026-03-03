@@ -19,7 +19,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-      <AssistantPanel />
+      <AssistantPanel userName={session.user.name} userImage={session.user.image} />
     </div>
   );
 }
