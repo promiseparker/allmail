@@ -7,7 +7,18 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "bullmq"],
+    serverComponentsExternalPackages: [
+      "@prisma/client",
+      "prisma",
+      "bullmq",
+      "ioredis",
+      "googleapis",
+      "google-auth-library",
+      "@azure/msal-node",
+      "@microsoft/microsoft-graph-client",
+      "tsdav",
+      "resend",
+    ],
   },
   images: {
     remotePatterns: [
