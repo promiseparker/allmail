@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { encryptToken } from "@/lib/crypto";
 import { cache, cacheKey } from "@/lib/redis";
+
+export const maxDuration = 30;
 import { enqueueSetupCalendars } from "@/lib/queue/jobs";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";

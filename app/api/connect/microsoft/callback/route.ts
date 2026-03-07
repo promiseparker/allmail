@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { encryptToken } from "@/lib/crypto";
 import { cache, cacheKey } from "@/lib/redis";
+
+export const maxDuration = 30;
 import { enqueueSetupCalendars } from "@/lib/queue/jobs";
 
 const MS_TENANT = process.env.MICROSOFT_TENANT_ID ?? "common";

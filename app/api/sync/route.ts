@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const maxDuration = 60;
 import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { enqueueFullSync } from "@/lib/queue/jobs";

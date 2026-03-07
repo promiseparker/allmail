@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+
+export const maxDuration = 60;
 import Anthropic from "@anthropic-ai/sdk";
 import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db";

@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const maxDuration = 30;
 import { requireAuth } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { format } from "date-fns";
